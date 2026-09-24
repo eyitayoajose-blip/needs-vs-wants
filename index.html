@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BudgetBasics | Smart Capital Decisions & Behavior Engine</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace']
+      },
+      colors: {
+        brand: {
+          50: '#EEF2FF',
+          100: '#E0E7FF',
+          500: '#3B5BFE',
+          600: '#2547EB',
+          700: '#1D35B8',
+          900: '#0B1E3A'
+        }
+      }
+    }
+  }
+}
+</script>
+
+<style>
+/* =========================
+   GLOBAL RESET & TYPOGRAPHY
+========================= */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background-color: #F8FAFC;
+  color: #0B1E3A;
+  overflow-x: hidden;
+}
+
+#scrollProgress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, #3B5BFE, #60A5FA, #10B981);
+  z-index: 9999;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .7s cubic-bezier(0.16, 1, 0.3, 1), transform .7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Glass & Card Finishes */
+.fin-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px -4px rgba(11, 30, 58, 0.05);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.fin-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 35px -10px rgba(11, 30, 58, 0.08);
+  border-color: rgba(59, 91, 254, 0.3);
+}
+
+.table-row-hover {
+  transition: background-color 0.15s ease;
+}
+
+.table-row-hover:hover {
+  background-color: #F1F5F9;
+}
+
+/* ===================================================
+   3D OVERLAPPING KINETIC STACK DECK
+=================================================== */
+.deck-container {
+  position: relative;
+  width: 100%;
+  max-width: 700px;
+  height: 480px;
+  margin: 0 auto;
+  perspective: 1200px;
+}
+
+@media (max-width: 640px) {
+  .deck-container {
+    height: 540px;
+  }
+}
+
+.stack-card {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 28px;
+  user-select: none;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.35s ease,
+              box-shadow 0.35s ease;
+  will-change: transform, opacity;
+}
+
+/* Overlapping Layers */
+.stack-card.pos-0 {
+  z-index: 30;
+  transform: translate3d(0, 0, 0) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+  box-shadow: 0 25px 50px -12px rgba(11, 30, 58, 0.16);
+}
+
+.stack-card.pos-1 {
+  z-index: 20;
+  transform: translate3d(0, 18px, -40px) scale(0.95);
+  opacity: 0.82;
+  pointer-events: none;
+  box-shadow: 0 15px 35px -10px rgba(11, 30, 58, 0.1);
+}
+
+.stack-card.pos-2 {
+  z-index: 10;
+  transform: translate3d(0, 36px, -80px) scale(0.90);
+  opacity: 0.5;
+  pointer-events: none;
+  box-shadow: 0 10px 25px -8px rgba(11, 30, 58, 0.06);
+}
+
+.stack-card.pos-hidden {
+  z-index: 0;
+  transform: translate3d(0, 54px, -120px) scale(0.85);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Slide Out: Correct -> Right | Wrong -> Left */
+.stack-card.slide-out-right {
+  transform: translate3d(125%, 30px, 0) rotate(14deg) scale(0.88) !important;
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.stack-card.slide-out-left {
+  transform: translate3d(-125%, 30px, 0) rotate(-14deg) scale(0.88) !important;
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.stack-card.slide-out-skip {
+  transform: translate3d(0, 130%, 0) scale(0.8) !important;
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+/* Slide In Reverse */
+.stack-card.slide-in-right-reverse {
+  animation: slideBackFromRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.stack-card.slide-in-left-reverse {
+  animation: slideBackFromLeft 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.stack-card.slide-in-skip-reverse {
+  animation: slideBackFromBottom 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideBackFromRight {
+  0% { transform: translate3d(125%, 30px, 0) rotate(14deg) scale(0.88); opacity: 0; }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); opacity: 1; }
+}
+
+@keyframes slideBackFromLeft {
+  0% { transform: translate3d(-125%, 30px, 0) rotate(-14deg) scale(0.88); opacity: 0; }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); opacity: 1; }
+}
+
+@keyframes slideBackFromBottom {
+  0% { transform: translate3d(0, 130%, 0) scale(0.8); opacity: 0; }
+  100% { transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+}
+
+/* Floating Notification Bar */
+.student-tip {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  max-width: 380px;
+  background: #0B1E3A;
+  color: white;
+  border-radius: 18px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 90;
+  box-shadow: 0 20px 45px rgba(11, 30, 58, 0.25);
+  animation: tipAppear 0.5s ease;
+}
+
+@keyframes tipAppear {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#bubbleContainer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 450;
+}
+
+.bubble {
+  position: absolute;
+  bottom: -80px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.9), rgba(124,140,255,.4), rgba(59,91,254,.15));
+  border: 1px solid rgba(255,255,255,.6);
+  animation: bubbleRise linear forwards;
+}
+
+@keyframes bubbleRise {
+  0% { transform: translateY(0) scale(0.5); opacity: 0; }
+  15% { opacity: 1; }
+  50% { transform: translateY(-50vh) translateX(30px) scale(1); }
+  100% { transform: translateY(-115vh) translateX(-20px) scale(1.1); opacity: 0; }
+}
+</style>
+</head>
+
+<body class="antialiased selection:bg-brand-500 selection:text-white">
+
+<div id="scrollProgress"></div>
+
+<!-- NAVIGATION BAR -->
+<header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200">
+  <div class="max-w-[1160px] mx-auto px-6 lg:px-8 h-16 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-[#0B1E3A] text-white flex items-center justify-center font-mono font-extrabold text-sm shadow-md">
+        ₦
+      </div>
+      <div>
+        <span class="font-extrabold tracking-tight text-[#0B1E3A] text-base block leading-none">BudgetBasics</span>
+        <span class="text-[10px] font-mono tracking-wider text-slate-500 font-semibold uppercase">Financial Decision Architecture</span>
+      </div>
+    </div>
+
+    <nav class="hidden md:flex items-center gap-8 text-xs font-semibold text-slate-600">
+      <a href="#inflow-outflow" class="hover:text-brand-500 transition-colors">Where Money Goes</a>
+      <a href="#needs-wants" class="hover:text-brand-500 transition-colors font-bold text-[#0B1E3A]">Needs vs Wants Table</a>
+      <a href="#challenge" class="text-brand-500 font-bold flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse"></span>
+        30 Scenario Deck
+      </a>
+      <a href="#guide" class="hover:text-brand-500 transition-colors">The 4-Step Pause</a>
+      <a href="#analytics" class="hover:text-brand-500 transition-colors">Habit Velocity</a>
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <div class="px-3 py-1.5 rounded-lg bg-slate-100 text-xs font-mono font-bold text-emerald-600 border border-slate-200">
+        RUNWAY: <span id="headerRunway">3.8 Mo</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- HERO SECTION -->
+<section class="reveal max-w-[1160px] mx-auto px-6 lg:px-8 pt-16 md:pt-20 pb-12 grid md:grid-cols-[1.1fr_.9fr] gap-10 items-center">
+  <div class="space-y-6">
+    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-[11px] font-semibold tracking-wider text-slate-600">
+      <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+      PROPOSED BEHAVIORAL DECISION SYSTEM
+    </div>
+
+    <h1 class="text-4xl md:text-6xl font-extrabold leading-[1.02] tracking-tight text-[#0B1E3A]">
+      Small decisions.<br>
+      <span class="text-brand-500">Unshakable money habits.</span>
+    </h1>
+
+    <p class="text-slate-600 text-base md:text-lg leading-relaxed max-w-xl">
+      BudgetBasics helps students, creators, and early earners understand exactly <strong>where money comes from</strong>, <strong>how it gets spent</strong>, and how simple pauses build financial runway.
+    </p>
+
+    <div class="flex flex-wrap gap-4 pt-2">
+      <a href="#challenge" class="px-6 py-3.5 rounded-xl bg-[#0B1E3A] text-white text-sm font-semibold hover:bg-black transition-all shadow-lg flex items-center gap-2">
+        Launch Decision Deck (1/30) →
+      </a>
+      <a href="#needs-wants" class="px-6 py-3.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-all">
+        Inspect Needs vs Wants Matrix
+      </a>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE LIVE LEDGER / CASH FLOW CARD -->
+  <div class="fin-card p-7 md:p-8 bg-white border border-slate-200">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-[11px] font-mono tracking-wider uppercase text-slate-500 font-semibold">Active Survival Runway</p>
+        <div class="flex items-baseline gap-2 mt-1">
+          <span class="text-3xl sm:text-4xl font-extrabold font-mono text-[#0B1E3A]" id="heroBalance">₦50,000</span>
+          <span class="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">Safe Reserve</span>
+        </div>
+      </div>
+      <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-700">
+        ₦
+      </div>
+    </div>
+
+    <!-- Live Split Progress Bars -->
+    <div class="mt-8 space-y-4 font-mono text-xs">
+      <div>
+        <div class="flex justify-between text-slate-600 font-sans mb-1.5 font-medium">
+          <span>Non-Negotiable Needs (64%)</span>
+          <span class="font-bold text-slate-900" id="heroNeeds">₦32,000</span>
+        </div>
+        <div class="h-2.5 rounded-full bg-slate-100 overflow-hidden">
+          <div id="heroNeedsBar" class="h-full bg-[#0B1E3A] rounded-full transition-all duration-300" style="width: 64%"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="flex justify-between text-slate-600 font-sans mb-1.5 font-medium">
+          <span>Human Capital & School (22%)</span>
+          <span class="font-bold text-slate-900" id="heroGrowth">₦11,000</span>
+        </div>
+        <div class="h-2.5 rounded-full bg-slate-100 overflow-hidden">
+          <div id="heroGrowthBar" class="h-full bg-brand-500 rounded-full transition-all duration-300" style="width: 22%"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="flex justify-between text-slate-600 font-sans mb-1.5 font-medium">
+          <span>Liquid Buffer & Savings (14%)</span>
+          <span class="font-bold text-emerald-600" id="heroSavings">₦7,000</span>
+        </div>
+        <div class="h-2.5 rounded-full bg-slate-100 overflow-hidden">
+          <div id="heroSavingsBar" class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: 14%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 pt-5 border-t border-slate-100 grid grid-cols-2 gap-3 text-center text-xs">
+      <div class="p-2.5 rounded-xl bg-slate-50">
+        <span class="text-slate-500 block text-[10px] font-mono">HABIT DEFENSE RATIO</span>
+        <strong class="text-slate-900 font-mono text-sm" id="heroHabitRatio">88.4%</strong>
+      </div>
+      <div class="p-2.5 rounded-xl bg-slate-50">
+        <span class="text-slate-500 block text-[10px] font-mono">AVOIDED IMPULSE DEBT</span>
+        <strong class="text-emerald-600 font-mono text-sm" id="heroAvoidedDebt">₦0</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="max-w-[1160px] mx-auto px-6 lg:px-8 pb-20 space-y-24">
+
+  <!-- ===================================================
+       WHERE MONEY COMES FROM & WHERE IT GOES
+  =================================================== -->
+  <section id="inflow-outflow" class="reveal pt-8 scroll-mt-24">
+    <div class="max-w-2xl mx-auto text-center mb-12">
+      <p class="text-xs font-mono font-bold tracking-widest text-brand-500 uppercase">The Cash Flow Anatomy</p>
+      <h2 class="text-3xl md:text-4xl font-extrabold text-[#0B1E3A] mt-2">Where Money Comes From & Goes</h2>
+      <p class="text-slate-600 text-sm mt-3">
+        Financial literacy begins by understanding inflows and outflows. Without a plan, inflows evaporate into hidden leaks.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8 items-stretch">
+      <!-- Inflow Panel -->
+      <div class="fin-card p-8 bg-gradient-to-br from-white to-blue-50/40 border border-blue-100">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-xl bg-blue-100 text-brand-600 flex items-center justify-center font-bold text-lg">
+            ↓
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-[#0B1E3A]">Inflows (Sources of Capital)</h3>
+            <span class="text-xs text-slate-500 font-medium">How money arrives in your life</span>
+          </div>
+        </div>
+
+        <ul class="space-y-4 text-xs font-medium text-slate-700">
+          <li class="p-3.5 rounded-xl bg-white border border-slate-200/80 flex items-center justify-between">
+            <span class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+              Family & Monthly Allowances
+            </span>
+            <span class="font-mono text-slate-500">Regular / Predictable</span>
+          </li>
+          <li class="p-3.5 rounded-xl bg-white border border-slate-200/80 flex items-center justify-between">
+            <span class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              Side Gigs & Freelance Tutoring
+            </span>
+            <span class="font-mono text-slate-500">Earned / Elastic</span>
+          </li>
+          <li class="p-3.5 rounded-xl bg-white border border-slate-200/80 flex items-center justify-between">
+            <span class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              Occasional Windfalls & Gifts
+            </span>
+            <span class="font-mono text-slate-500">Unplanned / One-Off</span>
+          </li>
+          <li class="p-3.5 rounded-xl bg-white border border-slate-200/80 flex items-center justify-between">
+            <span class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+              Academic Bursaries & Stipends
+            </span>
+            <span class="font-mono text-slate-500">Restricted Use</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Outflow Allocation Panel -->
+      <div class="fin-card p-8 bg-gradient-to-br from-white to-slate-50/80 border border-slate-200">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-lg">
+            ↑
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-[#0B1E3A]">Outflows (Capital Deployment)</h3>
+            <span class="text-xs text-slate-500 font-medium">The intentional distribution architecture</span>
+          </div>
+        </div>
+
+        <ul class="space-y-4 text-xs font-medium text-slate-700">
+          <li class="p-3.5 rounded-xl bg-white border border-slate-200/80 flex items-center justify-between">
+            <div>
+              <span class="font-bold text-[#0B1E3A] block">Stage 1: Non-Negotiables (50–60%)</span>
+              <span class="text-slate-500">Food, transport, course supplies, housing</span>
+            </div>
+            <span class="font-mono text-emerald-600 font-bold">1st Priority</span>
+          </li>
+          <li class="p-3.5 rounded-xl bg-white border border-slate-200/80 flex items-center justify-between">
+            <div>
+              <span class="font-bold text-[#0B1E3A] block">Stage 2: Pay Yourself First (15–20%)</span>
+              <span class="text-slate-500">Emergency buffer, savings vaults, tools</span>
+            </div>
+            <span class="font-mono text-blue-600 font-bold">2nd Priority</span>
+          </li>
+          <li class="p-3.5 rounded-xl bg-white border border-slate-200/80 flex items-center justify-between">
+            <div>
+              <span class="font-bold text-[#0B1E3A] block">Stage 3: Elastic Recreation (20–30%)</span>
+              <span class="text-slate-500">Eating out, entertainment, fashion items</span>
+            </div>
+            <span class="font-mono text-amber-600 font-bold">Safe Discretionary</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================
+       EXPANDED TABULAR NEEDS VS WANTS COMPARISON MATRIX
+  =================================================== -->
+  <section id="needs-wants" class="reveal scroll-mt-24 space-y-8">
+    <div class="max-w-2xl mx-auto text-center">
+      <p class="text-xs font-mono font-bold tracking-widest text-brand-500 uppercase">Analytical Taxonomy</p>
+      <h2 class="text-3xl md:text-4xl font-extrabold text-[#0B1E3A] mt-2">Needs vs Wants Diagnostic Matrix</h2>
+      <p class="text-slate-600 text-sm mt-3">
+        Benchmark every outflow against 14 behavioral criteria to eliminate financial leaks before authorizing any transaction.
+      </p>
+      <div class="inline-flex items-center gap-4 mt-4 px-4 py-1.5 rounded-full bg-slate-100 text-xs font-mono text-slate-700">
+        <span class="flex items-center gap-1.5"><span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 inline-flex items-center justify-center font-bold text-xs">✓</span> Present / Active</span>
+        <span class="text-slate-300">|</span>
+        <span class="flex items-center gap-1.5"><span class="w-5 h-5 rounded-full bg-slate-200 text-slate-400 inline-flex items-center justify-center font-bold text-xs">∅</span> Null / Inapplicable</span>
+      </div>
+    </div>
+
+    <!-- 14-Row Comprehensive Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200 font-mono text-slate-600 uppercase text-[11px]">
+            <th class="py-3.5 px-4 font-bold">Evaluation Property</th>
+            <th class="py-3.5 px-4 font-bold text-center text-emerald-700 bg-emerald-50/50 w-44">Essential Needs</th>
+            <th class="py-3.5 px-4 font-bold text-center text-slate-800 bg-slate-100/50 w-44">Optional Wants</th>
+            <th class="py-3.5 px-4 font-bold">Diagnostic Evaluation Rule</th>
+            <th class="py-3.5 px-4 font-bold text-center w-36">Status Tier</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 font-medium">
+          <!-- 1: Physiological Survival -->
+          <tr class="table-row-hover">
+            <td class="py-4 px-4 font-bold text-[#0B1E3A] font-mono">1. Physiological Survival Support</td>
+            <td class="py-4 px-4 text-center bg-emerald-50/20">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600 text-base font-bold">✓</span>
+            </td>
+            <td class="py-4 px-4 text-center bg-slate-50/30">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-100 text-slate-400 text-base font-bold font-mono">∅</span>
+            </td>
+            <td class="py-4 px-4 text-slate-600">Sustains baseline biological life, hydration, and safe lodging.</td>
+            <td class="py-4 px-4 text-center">
+              <span class="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 font-mono font-bold text-[10px]">MANDATORY</span>
+            </td>
+          </tr>
+
+          <!-- 2: 24-Hour Postponability -->
+          <tr class="table-row-hover">
+            <td class="py-4 px-4 font-bold text-[#0B1E3A] font-mono">2. 24-Hour Postponability</td>
+            <td class="py-4 px-4 text-center bg-emerald-50/20">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-100 text-slate-400 text-base font-bold font-mono">∅</span>
+            </td>
+            <td class="py-4 px-4 text-center bg-slate-50/30">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600 text-base font-bold">✓</span>
+            </td>
+            <td class="py-4 px-4 text-slate-600">Can be delayed 24–48 hours without causing structural distress.</td>
+            <td class="py-4 px-4 text-center">
+              <span class="px-2.5 py-1 rounded-md bg-blue-100 text-brand-800 font-mono font-bold text-[10px]">FLEXIBLE</span>
+            </td>
+          </tr>
+
+          <!-- 3: Institutional / Academic Penalty -->
+          <tr class="table-row-hover">
+            <td class="py-4 px-4 font-bold text-[#0B1E3A] font-mono">3. Structural Penalty on Omission</td>
+            <td class="py-4 px-4 text-center bg-emerald-50/20">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600 text-base font-bold">✓</span>
+            </td>
+            <td class="py-4 px-4 text-center bg-slate-50/30">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-100 text-slate-400 text-base font-bold font-mono">∅</span>
+            </td>
+            <td class="py-4 px-4 text-slate-600">Failure to clear creates failed grades, legal penalties, or eviction.</td>
+            <td class="py-4 px-4 text-center">
+              <span class="px-2.5 py-1 rounded-md bg-rose-100 text-rose-800 font-mono font-bold text-[10px]">CRITICAL</span>
+            </td>
+          </tr>
+
+          <!-- 4: Debt Eligibility -->
+          <tr class="table-row-hover">
+            <td class="py-4 px-4 font-bold text-[#0B1E3A] font-mono">4. Debt Financing Eligibility</td>
+            <td class="py-4 px-4 text-center bg-emerald-50/20">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600 text-base font-bold">✓</span>
+            </td>
+            <td class="py-4 px-4 text-center bg-slate-50/30">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-100 text-slate-400 text-base font-bold font-mono">∅</span>
+            </td>
+            <td class="py-4 px-4 text-slate-600">Permitted solely in verified health emergencies with confirmed repayment.</td>
+            <td class="py-4 px-4 text-center">
+              <span class="px-2.5 py-1 rounded-md bg-slate-200 text-slate-800 font-mono font-bold text-[10px]">RESTRICTED</span>
+            </td>
+          </tr>
+
+          <!-- 5: Zero-Cost Substitutes -->
+          <tr class="table-row-hover">
+            <td class="py-4 px-4 font-bold text-[#0B1E3A] font-mono">5. Zero-Cost Free Substitutes Available</td>
+            <td class="py-4 px-4 text-center bg-emerald-50/20">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-100 text-slate-400 text-base font-bold font-mono">∅</span>
+            </td>
+            <td class="py-4 px-4 text-center bg-slate-50/30">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600 text-base font-bold">✓</span>
+            </td>
+            <td class="py-4 px-4 text-slate-600">Borrowing event fits, using campus library books, public open Wi-Fi.</td>
+            <td class="py-4 px-4 text-center">
+              <span class="px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 font-mono font-bold text-[10px]">SUBSTITUTABLE</span>
+            </td>
+          </tr>
+
+          <!-- 6: Buyer's Remorse Risk -->
+          <tr class="table-row-hover">
+            <td class="py-4 px-4 font-bold text-[#0B1E3A] font-mono">6. Post-Purchase Buyer's Remorse Risk</td>
+            <td class="py-4 px-4 text-center bg-emerald-50/20">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-100 text-slate-400 text-base font-bold font-mono">∅</span>
+            </td>
+            <td class="py-4 px-4 text-center bg-slate-50/30">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600 text-base font-bold">✓</span>
+            </td>
+            <td class="py-4 px-4 text-slate-600">High probability of regret once initial purchase excitement fades.</td>
+            <td class="py-4 px-4 text-center">
+              <span class="px-2.5 py-1 rounded-md bg-purple-100 text-purple-800 font-mono font-bold text-[10px]">BEHAVIORAL</span>
+            </td>
+          </tr>
+
+          <!-- 7: Emergency Buffer Exposure -->
+          <tr class="table-row-hover">
+            <td class="py-4 px-4 font-bold text-[#0B1E3A] font-mono">7. Threatens Emergency Survival Buffer</td>
+            <td class="py-4 px-4 text-center bg-emerald-50/20">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-100 text-slate-400 text-base font-bold font-mono">∅</span>
+            </td>
+            <td class="py-4 px-4 text-center bg-slate-50/30">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600 text-base font-bold">✓</span>
+            </td>
+            <td class="py-4 px-4 text-slate-600">Invades untouchable reserve capital to fund temporary desires.</td>
+            <td class="py-4 px-4 text-center">
+              <span class="px-2.5 py-1 rounded-md bg-rose-100 text-rose-800 font-mono font-bold text-[10px]">HIGH RISK</span>
+            </td>
+          </tr>
+
+          <!-- 8: Recurring Auto-Billing Leak -->
+          <tr class="table-row-hover">
+            <td class="py-4 px-4 font-bold text-[#0B1E3A] font-mono">8. Silent Recurring Subscription Risk</td>
+            <td class="py-4 px-4 text-center bg-emerald-50/20">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-100 text-slate-400 text-base font-bold font-mono">∅</span>
+            </td>
+            <td class="py-4 px-4 text-center bg-slate-50/30">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600 text-base font-bold">✓</span>
+            </td>
+            <td class="py-4 px-4 text-slate-600">Unused entertainment and premium trials renewing in the background.</td>
+            <td class="py-4 px-4 text-center">
+              <span class="px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 font-mono font-bold text-[10px]">LEAKAGE</span>
+            </td>
+          </tr>
+
+          <!-- 9: Asset Resale Depreciation -->
+          <tr class="table-row-hover">
+            <td class="py-4 px-4 font-bold text-[#0B1E3A] font-mono">9. Immediate Resale Depreciation</td>
+            <td class="py-4 px-4 text-center bg-emerald-50/20">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-100 text-slate-400 text-base font-bold font-mono">∅</span>
+            </td>
+            <td class="py-4 px-4 text-center bg-slate-50/30">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600 text-base font-bold">✓</span>
+            </td>
+            <td class="py-4 px-4 text-slate-600">Loses 30–70% of market value immediately upon retail purchase.</td>
+            <td class="py-4 px-4 text-center">
+              <span class="px-2.5 py-1 rounded-md bg-slate-200 text-slate-800 font-mono font-bold text-[10px]">DEPRECIATES</span>
+            </td>
+          </tr>
+
+          <!-- 10: Earning Power Enhancement -->
+          <tr class="table-row-hover">
+            <td class="py-4 px-4 font-bold text-[#0B1E3A] font-mono">10. Expands Future Earning Power</td>
+            <td class="py-4 px-4 text-center bg-emerald-50/20">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600 text-base font-bold">✓</span>
+            </td>
+            <td class="py-4 px-4 text-center bg-slate-50/30">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-100 text-slate-400 text-base font-bold font-mono">∅</span>
+            </td>
+            <td class="py-4 px-4 text-slate-600">Productive tooling, skill workshops, core textbooks, study laptops.</td>
+            <td class="py-4 px-4 text-center">
+              <span class="px-2.5 py-1 rounded-md bg-blue-100 text-brand-800 font-mono font-bold text-[10px]">PRODUCTIVE</span>
+            </td>
+          </tr>
+
+          <!-- 11: Social Validation / Status Driven -->
+          <tr class="table-row-hover">
+            <td class="py-4 px-4 font-bold text-[#0B1E3A] font-mono">11. Driven by Peer Pressure / Validation</td>
+            <td class="py-4 px-4 text-center bg-emerald-50/20">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-100 text-slate-400 text-base font-bold font-mono">∅</span>
+            </td>
+            <td class="py-4 px-4 text-center bg-slate-50/30">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600 text-base font-bold">✓</span>
+            </td>
+            <td class="py-4 px-4 text-slate-600">Purchasing to match peer lifestyle expectations or social media image.</td>
+            <td class="py-4 px-4 text-center">
+              <span class="px-2.5 py-1 rounded-md bg-purple-100 text-purple-800 font-mono font-bold text-[10px]">STATUS DEBT</span>
+            </td>
+          </tr>
+
+          <!-- 12: Bulk Purchasing Viability -->
+          <tr class="table-row-hover">
+            <td class="py-4 px-4 font-bold text-[#0B1E3A] font-mono">12. Cost-Effective in Bulk Units</td>
+            <td class="py-4 px-4 text-center bg-emerald-50/20">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600 text-base font-bold">✓</span>
+            </td>
+            <td class="py-4 px-4 text-center bg-slate-50/30">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-100 text-slate-400 text-base font-bold font-mono">∅</span>
+            </td>
+            <td class="py-4 px-4 text-slate-600">Non-perishable grains, toiletries, study stationery yield unit savings.</td>
+            <td class="py-4 px-4 text-center">
+              <span class="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 font-mono font-bold text-[10px]">UNIT VALUE</span>
+            </td>
+          </tr>
+
+          <!-- 13: Inflation Price Inelasticity -->
+          <tr class="table-row-hover">
+            <td class="py-4 px-4 font-bold text-[#0B1E3A] font-mono">13. Inelastic Demand Under Inflation</td>
+            <td class="py-4 px-4 text-center bg-emerald-50/20">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600 text-base font-bold">✓</span>
+            </td>
+            <td class="py-4 px-4 text-center bg-slate-50/30">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-slate-100 text-slate-400 text-base font-bold font-mono">∅</span>
+            </td>
+            <td class="py-4 px-4 text-slate-600">Must be procured regardless of price surges; demands strict budgeting.</td>
+            <td class="py-4 px-4 text-center">
+              <span class="px-2.5 py-1 rounded-md bg-rose-100 text-rose-800 font-mono font-bold text-[10px]">INELASTIC</span>
+            </td>
+          </tr>
+
+          <!-- 14: Recommended Budget Ratio Target -->
+          <tr class="table-row-hover bg-slate-50/60">
+            <td class="py-4 px-4 font-bold text-[#0B1E3A] font-mono">14. Direct Budget Allocation Target</td>
+            <td class="py-4 px-4 text-center bg-emerald-50/40">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600 text-base font-bold">✓</span>
+            </td>
+            <td class="py-4 px-4 text-center bg-slate-100/50">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-100 text-emerald-600 text-base font-bold">✓</span>
+            </td>
+            <td class="py-4 px-4 text-slate-600 font-mono text-[11px]">50–60% allocated to Needs; 15–20% max allocated to Wants.</td>
+            <td class="py-4 px-4 text-center">
+              <span class="px-2.5 py-1 rounded-md bg-slate-200 text-slate-800 font-mono font-bold text-[10px]">BALANCED</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- NEW INTERACTIVE AUDIT SANDBOX: NEEDS VS WANTS CLASSIFIER -->
+    <div class="fin-card p-6 md:p-8 bg-gradient-to-br from-white to-slate-50 border border-slate-200">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+        <div>
+          <span class="text-[10px] font-mono font-bold text-brand-600 uppercase tracking-widest block">Interactive Diagnostic Tool</span>
+          <h3 class="text-xl font-bold text-[#0B1E3A] mt-1">Quick Outflow Classifier</h3>
+          <p class="text-xs text-slate-600 mt-1">Select any common student expenditure below to evaluate its diagnostic classification.</p>
+        </div>
+        <div class="flex flex-wrap gap-2 text-xs font-mono">
+          <button onclick="classifyExample('groceries')" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors">Rice & Cooking Oil</button>
+          <button onclick="classifyExample('delivery')" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors">Fast Food Delivery</button>
+          <button onclick="classifyExample('antibiotics')" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors">Clinic Medicine</button>
+          <button onclick="classifyExample('sneakers')" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors">Novelty Sneakers</button>
+        </div>
+      </div>
+
+      <div class="mt-6 grid sm:grid-cols-4 gap-4 text-xs font-mono" id="classifierResult">
+        <div class="p-4 rounded-xl bg-white border border-slate-200">
+          <span class="text-slate-400 block text-[10px] uppercase">CLASSIFICATION</span>
+          <strong class="text-emerald-600 text-sm block mt-1" id="resClass">ESSENTIAL NEED</strong>
+        </div>
+        <div class="p-4 rounded-xl bg-white border border-slate-200">
+          <span class="text-slate-400 block text-[10px] uppercase">POSTPONABILITY</span>
+          <strong class="text-slate-800 text-sm block mt-1" id="resPostpone">NON-DEFERRABLE</strong>
+        </div>
+        <div class="p-4 rounded-xl bg-white border border-slate-200">
+          <span class="text-slate-400 block text-[10px] uppercase">FREE SUBSTITUTE</span>
+          <strong class="text-slate-800 text-sm block mt-1" id="resSub">NONE (OUTLAY REQUIRED)</strong>
+        </div>
+        <div class="p-4 rounded-xl bg-white border border-slate-200">
+          <span class="text-slate-400 block text-[10px] uppercase">ACTION PROTOCOL</span>
+          <strong class="text-brand-600 text-sm block mt-1" id="resAction">FUND IN BATCH / STAPLE</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================
+       30 OVERLAPPING KINETIC DECISION CHALLENGE DECK
+  =================================================== -->
+  <section id="challenge" class="reveal scroll-mt-24">
+    <div class="text-center max-w-2xl mx-auto mb-8">
+      <p class="text-xs font-mono font-bold tracking-widest text-brand-500 uppercase">Interactive Simulation Deck</p>
+      <h2 class="text-3xl md:text-4xl font-extrabold text-[#0B1E3A] mt-2">Money Decision Challenge</h2>
+      <p class="text-slate-600 text-sm mt-3">
+        Smart choices slide <strong class="text-emerald-600">Right</strong>. Impulse choices slide <strong class="text-rose-600">Left</strong>. Reveal the financial consequence on your live runway.
+      </p>
+
+      <!-- Category Filter Pills -->
+      <div class="flex flex-wrap justify-center gap-2 mt-6 text-xs font-semibold">
+        <button onclick="filterCategory('all')" id="tab-all" class="px-3.5 py-1.5 rounded-full bg-[#0B1E3A] text-white">All 30</button>
+        <button onclick="filterCategory('inflow')" id="tab-inflow" class="px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200">Windfalls & Inflows</button>
+        <button onclick="filterCategory('survival')" id="tab-survival" class="px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200">Survival Baseline</button>
+        <button onclick="filterCategory('peer')" id="tab-peer" class="px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200">Peer Boundaries</button>
+        <button onclick="filterCategory('tools')" id="tab-tools" class="px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200">Tools & Skills</button>
+      </div>
+
+      <!-- Live Stack Progress Indicator -->
+      <div class="mt-6 flex items-center justify-center gap-4 text-xs font-mono text-slate-600">
+        <span>CARD: <strong id="progressCount" class="text-slate-900">1</strong> / <span id="totalCardCount">30</span></span>
+        <div class="w-44 h-2 rounded-full bg-slate-200 overflow-hidden">
+          <div id="deckProgressBar" class="h-full bg-brand-500 transition-all duration-300" style="width: 3.33%"></div>
+        </div>
+        <span>SMART CHOICES: <strong id="smartScore" class="text-brand-500">0</strong></span>
+      </div>
+    </div>
+
+    <!-- CARDS DECK VIEWPORT -->
+    <div class="deck-container" id="cardsDeck">
+      <!-- 30 Dynamic Cards injected by JavaScript -->
+    </div>
+
+    <!-- Stack Controls -->
+    <div class="max-w-[700px] mx-auto mt-6 flex items-center justify-between px-2">
+      <button onclick="undoCard()" class="px-4 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 shadow-sm">
+        ↺ Previous Choice
+      </button>
+
+      <span class="text-xs text-slate-400 font-mono hidden sm:inline">Smart → Right | Want → Left</span>
+
+      <button onclick="skipCard()" class="px-4 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 shadow-sm">
+        Skip Card ↷
+      </button>
+    </div>
+  </section>
+
+  <!-- THE 4-STEP PAUSE FRAMEWORK -->
+  <section id="guide" class="reveal">
+    <div class="max-w-2xl mx-auto text-center mb-10">
+      <p class="text-xs font-mono font-bold tracking-widest text-brand-500 uppercase">The Pre-Commitment Heuristic</p>
+      <h2 class="text-3xl md:text-4xl font-extrabold text-[#0B1E3A] mt-2">Pause Before You Purchase</h2>
+      <p class="text-slate-600 text-sm mt-3">A practical four-question cognitive checklist for non-essential outflows.</p>
+    </div>
+
+    <div class="grid md:grid-cols-4 gap-4">
+      <div class="fin-card p-6 text-center">
+        <div class="mx-auto w-10 h-10 rounded-xl bg-brand-50 text-brand-500 font-bold flex items-center justify-center text-sm">1</div>
+        <h4 class="mt-4 font-bold text-[#0B1E3A]">Need?</h4>
+        <p class="mt-2 text-xs text-slate-600">Does this restore a baseline necessity or is it temporary excitement?</p>
+      </div>
+
+      <div class="fin-card p-6 text-center">
+        <div class="mx-auto w-10 h-10 rounded-xl bg-brand-50 text-brand-500 font-bold flex items-center justify-center text-sm">2</div>
+        <h4 class="mt-4 font-bold text-[#0B1E3A]">Budget?</h4>
+        <p class="mt-2 text-xs text-slate-600">Can current cash cover it without touching food or survival reserves?</p>
+      </div>
+
+      <div class="fin-card p-6 text-center">
+        <div class="mx-auto w-10 h-10 rounded-xl bg-brand-50 text-brand-500 font-bold flex items-center justify-center text-sm">3</div>
+        <h4 class="mt-4 font-bold text-[#0B1E3A]">Wait?</h4>
+        <p class="mt-2 text-xs text-slate-600">Can I pause 24 hours to clear the immediate impulse loop?</p>
+      </div>
+
+      <div class="fin-card p-6 text-center">
+        <div class="mx-auto w-10 h-10 rounded-xl bg-brand-50 text-brand-500 font-bold flex items-center justify-center text-sm">4</div>
+        <h4 class="mt-4 font-bold text-[#0B1E3A]">Decide</h4>
+        <p class="mt-2 text-xs text-slate-600">Make an intentional, guilt-free decision backed by your runway.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HABIT VELOCITY & CELEBRATION -->
+  <section id="analytics" class="reveal fin-card p-10 md:p-14 bg-[#0B1E3A] text-white text-center">
+    <div class="text-4xl">🎓 💰 🌱</div>
+    <h2 class="text-3xl md:text-4xl font-extrabold mt-5">Small decisions build freedom.</h2>
+    <p class="mt-3 max-w-xl mx-auto text-white/70 text-sm leading-relaxed">
+      You don't need a corporate salary to make disciplined moves. Start by knowing where your cash arrives, pausing before non-essentials, and growing your runway month by month.
+    </p>
+    <button onclick="showAppreciation('final')" class="mt-8 px-8 py-3.5 rounded-xl bg-brand-500 text-white font-bold text-sm hover:bg-blue-600 transition-all shadow-lg">
+      Inspect Decision Summary 🎉
+    </button>
+  </section>
+
+</main>
+
+<!-- FLOATING STUDENT TIP HUD -->
+<div id="studentTip" class="student-tip">
+  <div class="w-8 h-8 rounded-lg bg-brand-500 text-white flex items-center justify-center font-bold text-sm shrink-0">
+    💡
+  </div>
+  <p class="text-xs leading-snug">
+    <strong>Money Rule:</strong> <span id="tipText">Think before you spend.</span>
+  </p>
+  <button onclick="closeTip()" class="text-white/60 hover:text-white text-lg ml-auto font-mono">×</button>
+</div>
+
+<div id="bubbleContainer"></div>
+
+<!-- APPRECIATION / FEEDBACK POPUP -->
+<div id="appreciationPopup" class="fixed inset-0 z-50 bg-[#0B1E3A]/70 backdrop-blur-md hidden items-center justify-center p-6">
+  <div class="fin-card max-w-md w-full p-8 text-center bg-white shadow-2xl space-y-4">
+    <div id="popupIcon" class="w-14 h-14 mx-auto rounded-2xl bg-blue-50 text-3xl flex items-center justify-center">
+      🎉
+    </div>
+    <h3 id="popupTitle" class="text-2xl font-extrabold text-[#0B1E3A]">Decision Recorded</h3>
+    <p id="popupMessage" class="text-sm text-slate-600 leading-relaxed">Explanation message.</p>
+    <div id="popupImpact" class="p-3 rounded-xl bg-slate-50 text-xs font-mono font-semibold text-slate-700">
+      IMPACT: +₦0 to reserve
+    </div>
+    <button onclick="closePopup()" class="w-full py-3 rounded-xl bg-[#0B1E3A] text-white font-semibold text-sm hover:bg-black transition-all">
+      Continue Simulation →
+    </button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="border-t border-slate-200 bg-white py-8 text-xs text-slate-500">
+  <div class="max-w-[1160px] mx-auto px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-3">
+    <span>© 2026 BudgetBasics • Student Financial Decision Engine</span>
+    <span class="font-mono">Inflows • Needs vs Wants Table • 30 Challenges</span>
+  </div>
+</footer>
+
+<!-- COMPLETE JAVASCRIPT SYSTEM -->
+<script>
+/* ===================================================
+   30 RICH REAL-WORLD DECISION CHALLENGES
+=================================================== */
+const allChallenges = [
+  // 1-4: Core Scenarios
+  {
+    id: 1,
+    category: "survival",
+    tag: "IMPULSE CONTROL",
+    title: "Your shoes are still working.",
+    scenario: "You see trending sneakers heavily discounted online. Your current shoes have zero damage. Monthly cash is limited.",
+    bg: "bg-[#0B1E3A] text-white border-transparent",
+    badge: "text-[#8CA0FF]",
+    options: [
+      { text: "Buy immediately (₦18,000)", type: "want", impact: -18000 },
+      { text: "Wait 24h & keep current pair", type: "smart", impact: 0 }
+    ],
+    smartFeedback: "You preserved capital by refusing to upgrade a functional asset. Delaying gratification protects your survival runway.",
+    wantFeedback: "Upgrading working footwear depletes tight monthly reserves for novelty instead of necessity."
+  },
+  {
+    id: 2,
+    category: "survival",
+    tag: "ACADEMIC PRIORITY",
+    title: "School project is due tomorrow.",
+    scenario: "You need printing and project binding materials, but coursemates invite you to an evening cinema outing.",
+    bg: "bg-white text-[#0B1E3A] border-slate-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Print & bind school project", type: "smart", impact: -3500 },
+      { text: "Cinema ticket & popcorn", type: "want", impact: -6000 }
+    ],
+    smartFeedback: "Putting essential academic obligations ahead of leisure protects your long-term academic standing and tuition investment.",
+    wantFeedback: "Missing a project deadline carries irreversible grade penalties. Leisure must come after responsibilities."
+  },
+  {
+    id: 3,
+    category: "inflow",
+    tag: "WINDFALL DISTRIBUTION",
+    title: "You receive ₦10,000 unexpectedly.",
+    scenario: "An uncle sends you an unexpected ₦10,000 allowance gift. You currently have no critical bills due this week.",
+    bg: "bg-white text-[#0B1E3A] border-slate-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Save 60% into reserve vault", type: "smart", impact: 6000 },
+      { text: "Spend it all on treats today", type: "want", impact: -10000 }
+    ],
+    smartFeedback: "Treating windfalls intentionally builds wealth without feeling pinched. You grew your reserve buffer.",
+    wantFeedback: "Treating unexpected windfalls as instant play money reinforces lifestyle creep and leaves you with zero buffer."
+  },
+  {
+    id: 4,
+    category: "peer",
+    tag: "PEER BOUNDARIES",
+    title: "A friend asks to borrow transport funds.",
+    scenario: "Lending the cash will leave you with insufficient bus fare to reach campus lectures next week.",
+    bg: "bg-[#F0F3FF] text-[#0B1E3A] border-blue-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Politely protect your bus fare", type: "smart", impact: 0 },
+      { text: "Lend funds and walk to campus", type: "want", impact: -5000 }
+    ],
+    smartFeedback: "Never compromise your core educational logistics for uncollateralized peer loans.",
+    wantFeedback: "You cannot pour from an empty cup. Always secure your survival transport funds first."
+  },
+
+  // 5-30: 26 Practical Everyday Challenges
+  {
+    id: 5,
+    category: "tools",
+    tag: "SUBSCRIPTION LEAK",
+    title: "Music streaming free trial expiring.",
+    scenario: "A 30-day free trial ends tomorrow. You only listened twice all month. Auto-renewal will charge ₦2,800.",
+    bg: "bg-white text-[#0B1E3A] border-slate-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Cancel the trial today", type: "smart", impact: 0 },
+      { text: "Let it renew silently", type: "want", impact: -2800 }
+    ],
+    smartFeedback: "Canceling unused subscriptions plugs quiet financial leaks that drain student allowances.",
+    wantFeedback: "Unused auto-renewals quietly siphon money each month without providing value."
+  },
+  {
+    id: 6,
+    category: "survival",
+    tag: "GROCERY STRATEGY",
+    title: "Shopping for food on an empty stomach.",
+    scenario: "You enter the market hungry without a written shopping list, surrounded by snack vendors and takeaways.",
+    bg: "bg-[#0B1E3A] text-white border-transparent",
+    badge: "text-[#8CA0FF]",
+    options: [
+      { text: "Eat quick snack & write list first", type: "smart", impact: -300 },
+      { text: "Shop hungry and browse freely", type: "want", impact: -4500 }
+    ],
+    smartFeedback: "Shopping with a list while full reduces impulse supermarket spending by up to 40%.",
+    wantFeedback: "Shopping hungry triggers emotional cravings that override careful food budgeting."
+  },
+  {
+    id: 7,
+    category: "tools",
+    tag: "TECH UPGRADES",
+    title: "New phone model launched on credit.",
+    scenario: "Your current smartphone works smoothly with good battery life, but a vendor offers new installment debt.",
+    bg: "bg-white text-[#0B1E3A] border-slate-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Keep current functional device", type: "smart", impact: 0 },
+      { text: "Take monthly installment debt", type: "want", impact: -14000 }
+    ],
+    smartFeedback: "Extending device lifespans to 3–4 years saves massive capital over your academic career.",
+    wantFeedback: "Borrowing for marginal camera and screen upgrades traps students in recurring debt."
+  },
+  {
+    id: 8,
+    category: "survival",
+    tag: "BULK PROCUREMENT",
+    title: "Bulk rice sack vs daily sachets.",
+    scenario: "A 5kg staple bag costs ₦8,000. Daily 1kg mini-packets cost ₦2,200 (₦11,000 total). You have cash in reserve.",
+    bg: "bg-[#F0F3FF] text-[#0B1E3A] border-blue-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Buy the 5kg bulk unit (Save ₦3,000)", type: "smart", impact: -8000 },
+      { text: "Keep buying daily mini-packets", type: "want", impact: -11000 }
+    ],
+    smartFeedback: "Unit pricing analysis proves that buying non-perishable staples in bulk eliminates the retail markup penalty.",
+    wantFeedback: "Micro-buying daily packages adds an invisible tax to your essential grocery budget."
+  },
+  {
+    id: 9,
+    category: "inflow",
+    tag: "DISCOUNT ILLUSION",
+    title: "70% flash sale on winter coat.",
+    scenario: "An online banner advertises a designer winter coat marked down from ₦40,000 to ₦12,000 in a hot, tropical climate.",
+    bg: "bg-white text-[#0B1E3A] border-slate-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Ignore: zero utility in this climate", type: "smart", impact: 0 },
+      { text: "Buy to 'save' ₦28,000", type: "want", impact: -12000 }
+    ],
+    smartFeedback: "You didn't save ₦28,000—you kept ₦12,000 by refusing to purchase something you didn't need.",
+    wantFeedback: "The sale discount illusion tricks consumers into spending real cash on unusable clearance inventory."
+  },
+  {
+    id: 10,
+    category: "survival",
+    tag: "DATA LOGISTICS",
+    title: "Midnight-only bundle vs study sleep.",
+    scenario: "A cheaper midnight data bundle promises 20GB, but only works 1am–5am before your 8am lecture.",
+    bg: "bg-[#0B1E3A] text-white border-transparent",
+    badge: "text-[#8CA0FF]",
+    options: [
+      { text: "Buy standard daytime study bundle", type: "smart", impact: -2000 },
+      { text: "Stay awake 1am–5am to save ₦700", type: "want", impact: -700 }
+    ],
+    smartFeedback: "Sacrificing sleep and cognitive clarity for slight telecom discounts harms academic performance.",
+    wantFeedback: "Distorting sleep patterns to save small change costs far more in health and comprehension."
+  },
+  {
+    id: 11,
+    category: "peer",
+    tag: "GROUP BILL SPLIT",
+    title: "Splitting an unequal restaurant bill.",
+    scenario: "You drank water and ate a ₦1,200 rice plate. Classmates ordered expensive cocktails and want an even split.",
+    bg: "bg-white text-[#0B1E3A] border-slate-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Politely settle your own ₦1,200 order", type: "smart", impact: -1200 },
+      { text: "Pay ₦5,500 split to avoid talking", type: "want", impact: -5500 }
+    ],
+    smartFeedback: "Polite, clear financial boundaries protect your budget without creating friction.",
+    wantFeedback: "Subsidizing others' luxury meals out of awkwardness quickly empties a student wallet."
+  },
+  {
+    id: 12,
+    category: "survival",
+    tag: "PREVENTIVE HEALTH",
+    title: "Early dental ache checkup.",
+    scenario: "Your tooth twinges when eating. Clinic checkup is ₦2,500 now. Root canal therapy later costs ₦35,000.",
+    bg: "bg-[#F0F3FF] text-[#0B1E3A] border-blue-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Get checked early at campus clinic", type: "smart", impact: -2500 },
+      { text: "Ignore and hope it disappears", type: "want", impact: 0 }
+    ],
+    smartFeedback: "Preventive health maintenance is always cheaper than emergency dental surgery.",
+    wantFeedback: "Delaying medical care turns small, treatable symptoms into expensive health crises."
+  },
+  {
+    id: 13,
+    category: "survival",
+    tag: "SURGE TIMING",
+    title: "Sudden rain storm rideshare surge.",
+    scenario: "Cab apps surge 300% due to rain. The covered campus shuttle runs every 15 minutes for ₦200.",
+    bg: "bg-white text-[#0B1E3A] border-slate-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Wait 15 mins for the campus shuttle", type: "smart", impact: -200 },
+      { text: "Book private ₦4,500 surge ride", type: "want", impact: -4500 }
+    ],
+    smartFeedback: "Patience during brief weather spikes prevents days of food budget from washing away.",
+    wantFeedback: "Impulse spending during surge spikes takes a heavy toll on limited weekly funds."
+  },
+  {
+    id: 14,
+    category: "peer",
+    tag: "SUNK COST FALLACY",
+    title: "Unused gym term ticket refund.",
+    scenario: "You bought a gym pass, but class lab schedules conflict. Management offers an 80% refund if claimed this week.",
+    bg: "bg-[#0B1E3A] text-white border-transparent",
+    badge: "text-[#8CA0FF]",
+    options: [
+      { text: "Claim the 80% refund now", type: "smart", impact: 10000 },
+      { text: "Keep ticket and pretend you'll go", type: "want", impact: 0 }
+    ],
+    smartFeedback: "Recovering 80% of your funds beats losing 100% to the sunk cost fallacy.",
+    wantFeedback: "Holding onto an unused subscription out of pride guarantees a total financial loss."
+  },
+  {
+    id: 15,
+    category: "survival",
+    tag: "USED COURSEWARE",
+    title: "Textbook: Sealed bookstore vs clean senior copy.",
+    scenario: "Campus store charges ₦13,000 for a sealed textbook. A senior offers a clean copy with identical text for ₦4,000.",
+    bg: "bg-white text-[#0B1E3A] border-slate-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Buy verified clean senior copy", type: "smart", impact: -4000 },
+      { text: "Pay ₦13,000 for the new wrapper", type: "want", impact: -13000 }
+    ],
+    smartFeedback: "The course information is identical. You protected ₦9,000 for living essentials.",
+    wantFeedback: "Paying steep premiums for fresh paper smell provides zero academic advantage."
+  },
+  {
+    id: 16,
+    category: "inflow",
+    tag: "GAMBLING ILLUSION",
+    title: "'Sure odds' weekend sports betting slip.",
+    scenario: "A peer claims betting ₦2,000 on an 8-match ticket is '95% guaranteed' to return ₦75,000 this weekend.",
+    bg: "bg-[#F0F3FF] text-[#0B1E3A] border-blue-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Keep your ₦2,000 in your pocket", type: "smart", impact: 0 },
+      { text: "Stake the ₦2,000 accumulator", type: "want", impact: -2000 }
+    ],
+    smartFeedback: "Betting platforms are mathematically structured so the house always wins. Capital defense is real winning.",
+    wantFeedback: "Treating gambling as an investment strategy is a fast route to student debt."
+  },
+  {
+    id: 17,
+    category: "survival",
+    tag: "UTILITY BUFFER",
+    title: "Hostel power meter Friday warning.",
+    scenario: "Your electricity meter shows 4 kWh left on Friday before recharge vendor kiosks close for the weekend.",
+    bg: "bg-white text-[#0B1E3A] border-slate-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Recharge token before Friday close", type: "smart", impact: -3000 },
+      { text: "Wait until power trips off", type: "want", impact: 0 }
+    ],
+    smartFeedback: "Keeping power running preserves fridge food and study devices through the weekend.",
+    wantFeedback: "Running utilities to empty causes spoiled food and emergency vendor surcharges."
+  },
+  {
+    id: 18,
+    category: "tools",
+    tag: "PRODUCTIVE CAPITAL",
+    title: "Laptop battery fix for freelance design gigs.",
+    scenario: "A ₦6,000 battery repair restores your laptop, allowing you to deliver graphic jobs paying ₦15,000/mo.",
+    bg: "bg-[#0B1E3A] text-white border-transparent",
+    badge: "text-[#8CA0FF]",
+    options: [
+      { text: "Invest in laptop battery repair", type: "smart", impact: -6000 },
+      { text: "Spend the money on dinner outings", type: "want", impact: -6000 }
+    ],
+    smartFeedback: "Reinvesting capital into income-generating tools produces ongoing financial returns.",
+    wantFeedback: "Spending income on leisure while tools stay broken stunts your earning potential."
+  },
+  {
+    id: 19,
+    category: "survival",
+    tag: "REUSABLE DISCIPLINE",
+    title: "Daily bottled water vs refill flask.",
+    scenario: "Buying two bottled waters daily costs ₦600 (₦18,000/mo). A stainless filter flask costs ₦4,000 once.",
+    bg: "bg-white text-[#0B1E3A] border-slate-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Buy flask & use campus refill points", type: "smart", impact: -4000 },
+      { text: "Keep buying disposable plastic bottles", type: "want", impact: -18000 }
+    ],
+    smartFeedback: "The reusable flask pays for itself within 7 days, eliminating an ongoing cash leak.",
+    wantFeedback: "Daily convenience buys quietly consume a sizable share of a student's monthly budget."
+  },
+  {
+    id: 20,
+    category: "peer",
+    tag: "ONE-NIGHT FASHION",
+    title: "Single-evening faculty gala dress code.",
+    scenario: "An end-of-year faculty party sets an 'all-burgundy' dress code. You have clean, neat clothes, but no burgundy.",
+    bg: "bg-[#F0F3FF] text-[#0B1E3A] border-blue-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Borrow from a friend or wear neat fit", type: "smart", impact: 0 },
+      { text: "Buy brand new burgundy outfit", type: "want", impact: -16000 }
+    ],
+    smartFeedback: "The cost-per-wear on single-night event clothes is poor value. Borrowing is the smarter move.",
+    wantFeedback: "Spending a large portion of your monthly allowance for one evening's photos creates unnecessary financial strain."
+  },
+  {
+    id: 21,
+    category: "inflow",
+    tag: "PAY YOURSELF FIRST",
+    title: "Allowance disbursement arrival day.",
+    scenario: "Your monthly allowance of ₦40,000 hits your bank account today. Spending urges kick in.",
+    bg: "bg-[#0B1E3A] text-white border-transparent",
+    badge: "text-[#8CA0FF]",
+    options: [
+      { text: "Move savings to buffer reserve first", type: "smart", impact: 8000 },
+      { text: "Head out to treat yourself first", type: "want", impact: -8000 }
+    ],
+    smartFeedback: "'Pay yourself first' locks in stability before discretionary expenses can chip away at your balance.",
+    wantFeedback: "Spending first and saving 'whatever is left' usually leaves you with zero savings by month-end."
+  },
+  {
+    id: 22,
+    category: "tools",
+    tag: "SECURITY HYGIENE",
+    title: "Course software educational license.",
+    scenario: "Engineering software offers a student educational tier for ₦2,500. A peer shares a cracked download link.",
+    bg: "bg-white text-[#0B1E3A] border-slate-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Claim the official student license", type: "smart", impact: -2500 },
+      { text: "Download the cracked file", type: "want", impact: 0 }
+    ],
+    smartFeedback: "Official licenses protect study machines from ransomware and keyloggers that compromise student bank accounts.",
+    wantFeedback: "Cracked executables frequently bundle malware that risks compromised accounts and lost work."
+  },
+  {
+    id: 23,
+    category: "survival",
+    tag: "BATCH MEAL LOGISTICS",
+    title: "Sunday batch meal prep vs daily cafeteria bowls.",
+    scenario: "Batch cooking stews on Sunday costs ₦4,500 and takes 2 hours. Buying every dinner at stalls costs ₦11,500/wk.",
+    bg: "bg-white text-[#0B1E3A] border-slate-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Dedicate 2 hours to Sunday prep", type: "smart", impact: -4500 },
+      { text: "Buy commercial dinner bowls nightly", type: "want", impact: -11500 }
+    ],
+    smartFeedback: "Preparing staples ahead saves time during busy weekdays and cuts food expenses significantly.",
+    wantFeedback: "Outsourcing every meal to vendors doubles your basic living expenses."
+  },
+  {
+    id: 24,
+    category: "tools",
+    tag: "PREDATORY LOANS",
+    title: "Digital instant loan app notification.",
+    scenario: "An unsolicited SMS offers: 'Unlock ₦15,000 in 2 minutes for the weekend! (35% interest in 14 days)'.",
+    bg: "bg-[#F0F3FF] text-[#0B1E3A] border-blue-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Block the number and delete app", type: "smart", impact: 0 },
+      { text: "Accept loan for weekend outings", type: "want", impact: -6000 }
+    ],
+    smartFeedback: "Short-term loan apps charging 35% every two weeks translate to predatory debt traps.",
+    wantFeedback: "Borrowing money at steep interest for leisure is a fast route to financial stress."
+  },
+  {
+    id: 25,
+    category: "survival",
+    tag: "COGNITIVE REST",
+    title: "Finals week energy drink bender.",
+    scenario: "During finals week, friends suggest buying 4 energy cans daily (₦3,600/day) instead of structured sleep and water.",
+    bg: "bg-white text-[#0B1E3A] border-slate-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Keep regular sleep & hydration", type: "smart", impact: -400 },
+      { text: "Spend ₦18,000 on energy drinks", type: "want", impact: -18000 }
+    ],
+    smartFeedback: "Sleep supports clear memory recall. Excessive caffeine can lead to energy crashes during exams.",
+    wantFeedback: "Heavy stimulant spending burns cash while often leading to fatigue on exam day."
+  },
+  {
+    id: 26,
+    category: "peer",
+    tag: "SHARED EXPENSES",
+    title: "Hostel cooking gas cylinder refill.",
+    scenario: "Your flatmate asks you to cover the full ₦8,000 gas refill, but hasn't settled their share of last month's utilities.",
+    bg: "bg-[#0B1E3A] text-white border-transparent",
+    badge: "text-[#8CA0FF]",
+    options: [
+      { text: "Collect their 50% split upfront", type: "smart", impact: -4000 },
+      { text: "Pay 100% and hope they repay", type: "want", impact: -8000 }
+    ],
+    smartFeedback: "Settling shared household utilities promptly and clearly prevents tension and unpaid balances.",
+    wantFeedback: "Covering shared utility bills on trust alone often leaves you short on your own budget."
+  },
+  {
+    id: 27,
+    category: "inflow",
+    tag: "CASH YIELD",
+    title: "Zero-interest bank vs interest savings vault.",
+    scenario: "You hold a ₦25,000 reserve in a checking account that charges debit maintenance fees every month.",
+    bg: "bg-white text-[#0B1E3A] border-slate-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Move reserve to verified yield vault", type: "smart", impact: 300 },
+      { text: "Leave in checking account bleeding fees", type: "want", impact: -150 }
+    ],
+    smartFeedback: "Verified fintech savings vaults earn interest while keeping funds shielded from maintenance fees.",
+    wantFeedback: "Letting reserves sit idle in fee-charging accounts slowly chips away at your savings."
+  },
+  {
+    id: 28,
+    category: "tools",
+    tag: "EQUIPMENT SAFETY",
+    title: "Original laptop adapter vs roadside copy.",
+    scenario: "Your laptop charger died. Roadside unbranded adapter is ₦3,000; certified voltage-regulated replacement is ₦8,500.",
+    bg: "bg-[#F0F3FF] text-[#0B1E3A] border-blue-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Buy certified regulated adapter", type: "smart", impact: -8500 },
+      { text: "Buy unbranded cheap adapter", type: "want", impact: -3000 }
+    ],
+    smartFeedback: "Voltage surges from unverified knockoff chargers can damage laptop motherboards, leading to costly repairs.",
+    wantFeedback: "Cutting corners on electrical accessories risks damaging your primary workstation."
+  },
+  {
+    id: 29,
+    category: "tools",
+    tag: "SKILL INVESTMENT",
+    title: "Technical workshop vs cafe brunch.",
+    scenario: "A certified 4-hour Python data analytics bootcamp costs ₦5,000. A trendy cafe brunch outing costs ₦5,000.",
+    bg: "bg-[#0B1E3A] text-white border-transparent",
+    badge: "text-[#8CA0FF]",
+    options: [
+      { text: "Enroll in data bootcamp", type: "smart", impact: -5000 },
+      { text: "Spend money on brunch outing", type: "want", impact: -5000 }
+    ],
+    smartFeedback: "Investing in practical skills builds capabilities that can boost your future earning power.",
+    wantFeedback: "Prioritizing transient brunch outings over career-ready skills leaves little to show for the expense."
+  },
+  {
+    id: 30,
+    category: "inflow",
+    tag: "FINANCIAL REVIEW",
+    title: "End-of-term spending audit.",
+    scenario: "It is the final week of semester. You have 2 hours of free time before packing your bags for the break.",
+    bg: "bg-white text-[#0B1E3A] border-slate-200",
+    badge: "text-brand-500",
+    options: [
+      { text: "Audit expenses & set next budget", type: "smart", impact: 0 },
+      { text: "Pack and leave without reviewing", type: "want", impact: 0 }
+    ],
+    smartFeedback: "Reviewing past spending patterns helps you make smarter cash flow adjustments for the next term.",
+    wantFeedback: "Skipping reflection often leads to repeating the same budgeting mistakes term after term."
+  }
+];
+
+/* ===================================================
+   STACK DECK SYSTEM LOGIC (RIGHT: SMART, LEFT: WANT)
+=================================================== */
+let filteredDeck = [...allChallenges];
+let currentCardIndex = 0;
+let userScore = 0;
+let ledgerBalance = 50000;
+let totalAvoidedDebt = 0;
+const historyStack = [];
+
+function buildDeckDOM() {
+  const container = document.getElementById("cardsDeck");
+  container.innerHTML = "";
+
+  filteredDeck.forEach((c, idx) => {
+    const cardEl = document.createElement("div");
+    cardEl.id = `challenge-card-${idx}`;
+    cardEl.className = `stack-card fin-card ${c.bg} p-8 md:p-10 flex flex-col justify-between pos-hidden`;
+
+    cardEl.innerHTML = `
+      <div>
+        <div class="flex items-center justify-between">
+          <span class="${c.badge} text-[11px] font-mono font-bold tracking-widest uppercase">
+            ${c.tag}
+          </span>
+          <span class="text-xs font-mono font-bold opacity-60">#${c.id} of 30</span>
+        </div>
+        <h3 class="text-2xl md:text-3xl font-extrabold mt-3 leading-tight">
+          ${c.title}
+        </h3>
+        <p class="mt-4 text-sm md:text-base leading-relaxed opacity-80">
+          ${c.scenario}
+        </p>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-black/10 dark:border-white/10 flex flex-col sm:flex-row gap-3">
+        <button onclick="handleDecision(${idx}, 0)"
+          class="flex-1 py-3.5 px-4 rounded-xl font-semibold text-xs sm:text-sm transition-all shadow-md
+          ${c.options[0].type === 'smart' ? 'bg-[#0B1E3A] text-white hover:bg-black' : 'bg-brand-500 text-white hover:bg-blue-700'}">
+          ${c.options[0].text}
+        </button>
+
+        <button onclick="handleDecision(${idx}, 1)"
+          class="flex-1 py-3.5 px-4 rounded-xl font-semibold text-xs sm:text-sm border transition-all
+          ${c.options[1].type === 'smart' ? 'bg-white text-[#0B1E3A] border-slate-300 hover:bg-slate-50 font-bold' : 'bg-slate-100 text-[#0B1E3A] border-slate-300 hover:bg-white'}">
+          ${c.options[1].text}
+        </button>
+      </div>
+    `;
+
+    container.appendChild(cardEl);
+  });
+
+  updateDeckPositions();
+}
+
+function updateDeckPositions() {
+  filteredDeck.forEach((_, idx) => {
+    const card = document.getElementById(`challenge-card-${idx}`);
+    if (!card) return;
+
+    const isReverseAnimating = card.classList.contains('slide-in-right-reverse') ||
+                               card.classList.contains('slide-in-left-reverse') ||
+                               card.classList.contains('slide-in-skip-reverse');
+
+    card.classList.remove('pos-0', 'pos-1', 'pos-2', 'pos-hidden', 'slide-out-right', 'slide-out-left', 'slide-out-skip');
+
+    const diff = idx - currentCardIndex;
+    if (diff === 0) {
+      card.classList.add('pos-0');
+      if (isReverseAnimating) {
+        setTimeout(() => {
+          card.classList.remove('slide-in-right-reverse', 'slide-in-left-reverse', 'slide-in-skip-reverse');
+        }, 500);
+      }
+    } else if (diff === 1) {
+      card.classList.add('pos-1');
+      card.classList.remove('slide-in-right-reverse', 'slide-in-left-reverse', 'slide-in-skip-reverse');
+    } else if (diff === 2) {
+      card.classList.add('pos-2');
+      card.classList.remove('slide-in-right-reverse', 'slide-in-left-reverse', 'slide-in-skip-reverse');
+    } else {
+      card.classList.add('pos-hidden');
+      card.classList.remove('slide-in-right-reverse', 'slide-in-left-reverse', 'slide-in-skip-reverse');
+    }
+  });
+
+  // Update counters
+  const curDisplay = Math.min(currentCardIndex + 1, filteredDeck.length);
+  document.getElementById("progressCount").textContent = curDisplay;
+  document.getElementById("totalCardCount").textContent = filteredDeck.length;
+  document.getElementById("smartScore").textContent = userScore;
+
+  const pct = filteredDeck.length ? (curDisplay / filteredDeck.length) * 100 : 0;
+  document.getElementById("deckProgressBar").style.width = `${pct}%`;
+}
+
+/* ===================================================
+   DECISION HANDLER: SMART SLIDES RIGHT | WANT SLIDES LEFT
+=================================================== */
+function handleDecision(index, optionIndex) {
+  const activeCard = document.getElementById(`challenge-card-${index}`);
+  const cardData = filteredDeck[index];
+  const chosen = cardData.options[optionIndex];
+  const isSmart = (chosen.type === 'smart');
+
+  if (isSmart) {
+    userScore++;
+    totalAvoidedDebt += Math.abs(cardData.options[1 - optionIndex].impact || 4000);
+    ledgerBalance += 2000;
+    // Correct Answer -> Slides Right
+    activeCard.classList.add('slide-out-right');
+  } else {
+    ledgerBalance = Math.max(8000, ledgerBalance - 3500);
+    // Wrong Answer -> Slides Left
+    activeCard.classList.add('slide-out-left');
+  }
+
+  historyStack.push({
+    index,
+    wasSmart: isSmart,
+    impact: chosen.impact,
+    direction: isSmart ? 'right' : 'left'
+  });
+  updateLedgerDisplays();
+
+  setTimeout(() => {
+    showDecisionFeedback(cardData, isSmart, chosen);
+  }, 220);
+}
+
+function showDecisionFeedback(cardData, isSmart, chosen) {
+  const title = document.getElementById("popupTitle");
+  const message = document.getElementById("popupMessage");
+  const icon = document.getElementById("popupIcon");
+  const impact = document.getElementById("popupImpact");
+
+  if (isSmart) {
+    icon.textContent = "🛡️";
+    title.textContent = "Disciplined Move!";
+    message.textContent = cardData.smartFeedback;
+    impact.textContent = `RUNWAY BENEFIT: +₦2,000 preserved in active reserve`;
+    impact.className = "p-3 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-mono font-bold";
+    createBubbles(25);
+  } else {
+    icon.textContent = "💡";
+    title.textContent = "Opportunity Cost Incurred";
+    message.textContent = cardData.wantFeedback;
+    impact.textContent = `OPPORTUNITY COST: -₦3,500 displaced from monthly runway`;
+    impact.className = "p-3 rounded-xl bg-amber-50 text-amber-800 text-xs font-mono font-bold";
+  }
+
+  document.getElementById("appreciationPopup").style.display = "flex";
+}
+
+function closePopup() {
+  document.getElementById("appreciationPopup").style.display = "none";
+  currentCardIndex++;
+
+  if (currentCardIndex >= filteredDeck.length) {
+    showFinalCelebration();
+  } else {
+    updateDeckPositions();
+  }
+}
+
+function skipCard() {
+  if (currentCardIndex >= filteredDeck.length - 1) return;
+  const activeCard = document.getElementById(`challenge-card-${currentCardIndex}`);
+  activeCard.classList.add('slide-out-skip');
+  historyStack.push({
+    index: currentCardIndex,
+    wasSmart: false,
+    skipped: true,
+    direction: 'skip'
+  });
+  setTimeout(() => {
+    currentCardIndex++;
+    updateDeckPositions();
+  }, 250);
+}
+
+/* ===================================================
+   SLIDE-BACK FROM SAME DIRECTION
+=================================================== */
+function undoCard() {
+  if (currentCardIndex <= 0) return;
+
+  const lastMove = historyStack.pop();
+  if (lastMove && lastMove.wasSmart) {
+    userScore = Math.max(0, userScore - 1);
+    ledgerBalance -= 2000;
+  } else if (lastMove && !lastMove.skipped) {
+    ledgerBalance += 3500;
+  }
+
+  currentCardIndex--;
+
+  const returningCard = document.getElementById(`challenge-card-${currentCardIndex}`);
+  if (returningCard) {
+    returningCard.classList.remove('slide-out-right', 'slide-out-left', 'slide-out-skip', 'pos-hidden');
+
+    if (lastMove && lastMove.direction === 'left') {
+      returningCard.classList.add('slide-in-left-reverse');
+    } else if (lastMove && lastMove.direction === 'skip') {
+      returningCard.classList.add('slide-in-skip-reverse');
+    } else {
+      returningCard.classList.add('slide-in-right-reverse');
+    }
+  }
+
+  updateDeckPositions();
+  updateLedgerDisplays();
+}
+
+function filterCategory(cat) {
+  ['all', 'inflow', 'survival', 'peer', 'tools'].forEach(c => {
+    const btn = document.getElementById(`tab-${c}`);
+    if (c === cat) {
+      btn.className = "px-3.5 py-1.5 rounded-full bg-[#0B1E3A] text-white font-semibold";
+    } else {
+      btn.className = "px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200";
+    }
+  });
+
+  if (cat === 'all') {
+    filteredDeck = [...allChallenges];
+  } else {
+    filteredDeck = allChallenges.filter(item => item.category === cat);
+  }
+
+  currentCardIndex = 0;
+  buildDeckDOM();
+}
+
+function showFinalCelebration() {
+  const title = document.getElementById("popupTitle");
+  const message = document.getElementById("popupMessage");
+  const icon = document.getElementById("popupIcon");
+  const impact = document.getElementById("popupImpact");
+
+  icon.textContent = "🏆";
+  title.textContent = "Simulation Complete!";
+  message.textContent = `You finished the decision challenges with ${userScore} disciplined allocations! You protected approximately ₦${totalAvoidedDebt.toLocaleString()} in capital.`;
+  impact.textContent = `FINAL RUNWAY: ${(ledgerBalance / 13000).toFixed(1)} Months of living security`;
+  impact.className = "p-3 rounded-xl bg-blue-50 text-brand-600 text-xs font-mono font-bold";
+  document.getElementById("appreciationPopup").style.display = "flex";
+  createBubbles(50);
+}
+
+function updateLedgerDisplays() {
+  document.getElementById("heroBalance").textContent = `₦${ledgerBalance.toLocaleString()}`;
+  const runwayMo = (ledgerBalance / 13000).toFixed(1);
+  document.getElementById("headerRunway").textContent = `${runwayMo} Mo`;
+
+  const needs = Math.round(ledgerBalance * 0.64);
+  const growth = Math.round(ledgerBalance * 0.22);
+  const savings = Math.max(0, ledgerBalance - needs - growth);
+
+  document.getElementById("heroNeeds").textContent = `₦${needs.toLocaleString()}`;
+  document.getElementById("heroGrowth").textContent = `₦${growth.toLocaleString()}`;
+  document.getElementById("heroSavings").textContent = `₦${savings.toLocaleString()}`;
+  document.getElementById("heroAvoidedDebt").textContent = `₦${totalAvoidedDebt.toLocaleString()}`;
+}
+
+/* ===================================================
+   DIAGNOSTIC CLASSIFIER LOGIC
+=================================================== */
+const classifierDatabase = {
+  groceries: {
+    cls: "ESSENTIAL NEED",
+    postpone: "NON-DEFERRABLE",
+    sub: "NONE (OUTLAY REQUIRED)",
+    act: "FUND IN BATCH / STAPLE"
+  },
+  delivery: {
+    cls: "OPTIONAL WANT",
+    postpone: "24H+ DEFERRABLE",
+    sub: "BATCH-COOKED MEAL (FREE)",
+    act: "CANCEL / COOK AT HOME"
+  },
+  antibiotics: {
+    cls: "ESSENTIAL NEED",
+    postpone: "NON-DEFERRABLE",
+    sub: "CAMPUS CLINIC SUBSIDY",
+    act: "PURCHASE IMMEDIATELY"
+  },
+  sneakers: {
+    cls: "OPTIONAL WANT",
+    postpone: "INDEFINITELY DEFERRABLE",
+    sub: "EXISTING WORKING SHOES",
+    act: "WAIT 24 HOURS & CANCEL"
+  }
+};
+
+function classifyExample(type) {
+  const d = classifierDatabase[type];
+  if (!d) return;
+
+  const resClass = document.getElementById("resClass");
+  resClass.textContent = d.cls;
+  resClass.className = d.cls.includes("NEED") 
+    ? "text-emerald-600 text-sm block mt-1" 
+    : "text-brand-600 text-sm block mt-1";
+
+  document.getElementById("resPostpone").textContent = d.postpone;
+  document.getElementById("resSub").textContent = d.sub;
+  document.getElementById("resAction").textContent = d.act;
+}
+
+/* ===================================================
+   SCROLL, BUBBLES & TIPS
+=================================================== */
+window.addEventListener("scroll", () => {
+  const scrollTop = window.scrollY;
+  const pageHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const percentage = (scrollTop / pageHeight) * 100;
+  document.getElementById("scrollProgress").style.width = percentage + "%";
+});
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){ entry.target.classList.add("visible"); }
+  });
+}, { threshold: .12 });
+document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+
+const tips = [
+  "Write down your spending before the money disappears.",
+  "Separate your needs from your wants before tapping buy.",
+  "Try the 24-hour waiting rule before any non-essential purchase.",
+  "Small savings compound into powerful financial cushions.",
+  "Compare unit prices before spending on staple foods.",
+  "Never lend money that leaves your survival budget exposed."
+];
+let tipIndex = 0;
+setInterval(() => {
+  tipIndex = (tipIndex + 1) % tips.length;
+  const text = document.getElementById("tipText");
+  text.style.opacity = "0";
+  setTimeout(() => {
+    text.textContent = tips[tipIndex];
+    text.style.opacity = "1";
+  }, 200);
+}, 5500);
+
+function closeTip(){ document.getElementById("studentTip").style.display = "none"; }
+
+function createBubbles(amount){
+  const container = document.getElementById("bubbleContainer");
+  for(let i = 0; i < amount; i++){
+    const b = document.createElement("div");
+    b.className = "bubble";
+    const size = Math.random() * 30 + 10;
+    b.style.width = size + "px";
+    b.style.height = size + "px";
+    b.style.left = Math.random() * 100 + "%";
+    b.style.animationDuration = (Math.random() * 3 + 2.5) + "s";
+    container.appendChild(b);
+    setTimeout(() => b.remove(), 5500);
+  }
+}
+
+document.getElementById("appreciationPopup").addEventListener("click", function(e){
+  if(e.target === this) closePopup();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closePopup();
+  if (e.key === "ArrowRight") skipCard();
+  if (e.key === "ArrowLeft") undoCard();
+});
+
+// Initialize simulation
+buildDeckDOM();
+updateLedgerDisplays();
+</script>
+
+</body>
+</html>
